@@ -19,6 +19,7 @@ package com.codelab.android.datastore.ui
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -30,7 +31,12 @@ import com.codelab.android.datastore.databinding.ActivityTasksBinding
 private const val USER_PREFERENCES_NAME = "user_preferences"
 
 private val Context.dataStore by preferencesDataStore(
-    name = USER_PREFERENCES_NAME
+    name = USER_PREFERENCES_NAME,
+    produceMigrations = { context ->
+        // Since we're migrating from SharedPreferences, add a migration based on the
+        // SharedPreferences name
+        listOf(SharedPreferencesMigration(context, USER_PREFERENCES_NAME))
+    }
 )
 
 class TasksActivity : AppCompatActivity() {
@@ -48,7 +54,7 @@ class TasksActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(
             this,
-            TasksViewModelFactory(TasksRepository, UserPreferencesRepository(dataStore, this))
+            TasksViewModelFactory(TasksRepository, UserPreferencesRepository(dataStore))
         )[TasksViewModel::class.java]
 
         setupRecyclerView()
